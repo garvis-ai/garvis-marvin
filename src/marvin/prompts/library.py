@@ -1,4 +1,6 @@
 import inspect
+import os
+from datetime import datetime
 from typing import Callable, Literal, Optional
 
 from pydantic import Field
@@ -165,4 +167,12 @@ class ChainOfThought(Prompt):
 
 
 class Now(System):
-    content: str = "It is {{ now().strftime('%A, %d %B %Y at %I:%M:%S %p %Z') }}."
+    content: str = "It is {{ now }}."
+
+    def generate(self, **kwargs):
+        if not os.environ.get("MARVIN_NOW"):
+            now = datetime.now().strftime('%A, %d %B %Y at %I:%M:%S %p %Z')
+        else:
+            now = os.environ.get("MARVIN_NOW")
+        
+        return super().generate(now=now, **kwargs)
