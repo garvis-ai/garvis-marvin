@@ -166,3 +166,38 @@ class ChainOfThought(Prompt):
 
 class Now(System):
     content: str = "It is {{ now().strftime('%A, %d %B %Y at %I:%M:%S %p %Z') }}."
+    
+    
+    
+    
+    
+    
+    
+'''
+class NowOverride(System):
+    override_now_prompt: Optional[str] = None
+
+    def generate(self) -> str:
+        # If override_now_prompt is provided and not None, use it
+        if self.override_now_prompt is not None:
+            try:
+                now = datetime.strptime(self.override_now_prompt, '%Y-%m-%d')
+            except ValueError:
+                now = datetime.now()
+        else:
+            now = datetime.now()
+        return "It is {{now.strftime('%A, %d %B %Y at %I:%M:%S %p %Z')}}."
+'''        
+    
+
+
+    
+def get_now_override(override_now_prompt):
+    
+    
+    class NowOverride(System):
+        content: str = f"It is {override_now_prompt}." 
+        
+    return NowOverride() if override_now_prompt else None 
+    
+    

@@ -4,6 +4,7 @@ from typing import Any, Callable, Optional, Union
 
 from jsonpatch import JsonPatch
 from pydantic import BaseModel, Field, validator
+from datetime import datetime
 
 import marvin
 from marvin._compat import PYDANTIC_V2, model_dump
@@ -201,6 +202,7 @@ class AIApplication(LoggerMixin, MarvinBaseModel):
     plan: AppPlan = Field(default_factory=AppPlan)
     tools: list[Union[Tool, Callable[..., Any]]] = Field(default_factory=list)
     history: History = Field(default_factory=History)
+    override_now_prompt: str = None
     additional_prompts: list[Prompt] = Field(
         default_factory=list,
         description=(
@@ -244,11 +246,12 @@ class AIApplication(LoggerMixin, MarvinBaseModel):
             v = cls.__name__
         return v
 
-    def __call__(self, input_text: str = None, model: str = None, tools: list[Tool] = None, extra_prompts: list[Prompt] = [], request_handler: Callable = None, response_handler: Callable = None, **model_kwargs):
+    def __call__(self, input_text: str = None, model: str = None, tools: list[Tool] = None, override_now_prompt: str = None, extra_prompts: list[Prompt] = [], request_handler: Callable = None, response_handler: Callable = None, **model_kwargs):
         return run_sync(self.run(
             input_text=input_text, 
             model=model, 
             tools=tools, 
+            override_now_prompt=override_now_prompt,
             extra_prompts=extra_prompts, 
             request_handler=request_handler,
             response_handler=response_handler,
@@ -259,22 +262,39 @@ class AIApplication(LoggerMixin, MarvinBaseModel):
         response = await self.run(input_text=q)
         return response.content
 
-    async def run(self, input_text: str = None, model: str = None, tools: list[Tool] = None, extra_prompts: list[Prompt] = [], request_handler: Callable = None, response_handler: Callable = None, **model_kwargs) -> Message:
+    async def run(self, input_text: str = None, model: str = None, tools: list[Tool] = None, override_now_prompt: str = None, extra_prompts: list[Prompt] = [], request_handler: Callable = None, response_handler: Callable = None, **model_kwargs) -> Message:
         if model is None:
             model = marvin.settings.llm_model or "openai/gpt-4"
+            
+       
+        now = prompt_library.get_now_override(override_now_prompt) or prompt_library.Now()
+        
+              
+        print(' ')
+        print('********************************************')
+        print('********************************************')
+        print(f'LGDEBUG IN MARVIN: override_now_prompt= {prompt_library.Now()}')
+        print(f'LGDEBUG IN MARVIN: override_now_prompt= {override_now_prompt}')
+        print(f'LGDEBUG IN MARVIN: new now override prompt()= {now}')
+        #print(f'LGDEBUG IN MARVIN: now override= {prompt_library.NowOverride(override_now_prompt)}')
+        #print(f'LGDEBUG IN MARVIN: now override generate= {prompt_library.NowOverride.generate(override_now_prompt)}')
+        
+        print('********************************************')
+        print('********************************************')
+        print(' ')
 
         # set up prompts
         prompts = [
             # system prompts
             prompt_library.System(content=SYSTEM_PROMPT),
             # add current datetime
-            prompt_library.Now(),
+            now, #prompt_library.Now(),
             *self.additional_prompts,
             *extra_prompts,
             # get the history of messages between user and assistant
             prompt_library.MessageHistory(history=self.history),
         ]
-
+        
         # get latest user input
         input_text = input_text or ""
         self.logger.debug_kv("User input", input_text, key_style="green")
