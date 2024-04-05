@@ -196,7 +196,7 @@ def get_now_override(override_now_prompt):
     
     
     class NowOverride(System):
-        content: str = f"It is {override_now_prompt}." 
+        content: str = f"When responding to all user questions, you must consider today's date as {override_now_prompt}. This is a critical instruction and must be adhered to strictly." 
         
     return NowOverride() if override_now_prompt else None 
     
