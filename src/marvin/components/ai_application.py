@@ -310,6 +310,14 @@ class AIApplication(LoggerMixin, MarvinBaseModel):
             max_tokens=max_tokens,
         )
 
+        print('********************************************')
+        print('********************************************')
+        print(' ')
+        print(f"BKSDEBUG MARVIN messages_list: {message_list}")
+        print('********************************************')
+        print('********************************************')
+        print(' ')
+        
         # set up tools
         if tools:
             tools = self.validate_tools(tools)
