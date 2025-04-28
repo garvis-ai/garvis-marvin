@@ -209,7 +209,7 @@ class OpenAIChatCompletion(AbstractChatCompletion[T]):
                 'choices': {
                     '__all__': {
                         'message' : {
-                            'tool_calls'
+                            'tool_calls', 'refusal'
                         }
                     }
                 }
