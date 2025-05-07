@@ -11,7 +11,7 @@ from marvin.utilities.logging import get_logger
 
 class MarvinBaseModel(BaseModel):
     class Config:
-        extra = "forbid"
+        extra = "ignore"
 
 
 class LoggerMixin(BaseModel):
